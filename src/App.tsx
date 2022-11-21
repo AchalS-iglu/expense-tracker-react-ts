@@ -8,7 +8,7 @@ import ExpenseTotal from "./components/ExpenseTotal";
 import ExpenseList from "./components/ExpenseList";
 import AddExpenseForm from "./components/AddExpenseForm";
 
-import { AuthContextProvider, UserAuth } from "./Firebase/AuthContext";
+import { UserAuth } from "./Firebase/AuthContext";
 
 const App = () => {
   const { googleSignIn } = UserAuth();
@@ -22,8 +22,6 @@ const App = () => {
   };
 
   return (
-    <div>
-      <AuthContextProvider>
         <div className="container">
           <nav className="navbar navbar-expand-lg bg-light">
             <div className="container-fluid">
@@ -87,8 +85,6 @@ const App = () => {
             </div>
           </div>
         </div>
-      </AuthContextProvider>
-    </div>
   );
 };
 

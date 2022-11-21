@@ -11,8 +11,8 @@ import { FirebaseAuth } from "./initFirebase";
 interface IContext {
   // user: firebase.User | null;
   // loading: boolean;
-  googleSignIn: () => void;
   // logout: () => {};
+  googleSignIn: () => void;
 }
 
 const AuthContext = createContext<IContext>({
