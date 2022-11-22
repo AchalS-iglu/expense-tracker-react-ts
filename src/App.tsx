@@ -9,19 +9,14 @@ import ExpenseList from "./components/ExpenseList";
 import AddExpenseForm from "./components/AddExpenseForm";
 
 import { UserAuth } from "./Firebase/AuthContext";
+import SignIn from "./components/SignIn";
 
 const App = () => {
-  const { googleSignIn } = UserAuth();
-
-  const handleGoogleSignIn = async () => {
-    try {
-      await googleSignIn;
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const { user, googleSignIn, logOut } = UserAuth();
 
   return (
+    <div>
+      {user?.displayName ? (
         <div className="container">
           <nav className="navbar navbar-expand-lg bg-light">
             <div className="container-fluid">
@@ -37,11 +32,11 @@ const App = () => {
               </ul>
               <div className="navbar-nav">
                 <button
-                  className="btn btn-outline-success"
+                  className="btn btn-outline-danger"
                   type="submit"
-                  onClick={handleGoogleSignIn}
+                  onClick={logOut}
                 >
-                  Login
+                  Logout
                 </button>
               </div>
             </div>
@@ -55,7 +50,9 @@ const App = () => {
               </div>
               <div className="col-sm rounded border border-primary border border-info">
                 <ul className="list-group list-group-flush text-end">
-                  <li className="list-group-item">Logged in as:</li>
+                  <li className="list-group-item">
+                    Logged in as: {user?.displayName}
+                  </li>
                 </ul>
               </div>
             </div>
@@ -85,6 +82,10 @@ const App = () => {
             </div>
           </div>
         </div>
+      ) : (
+        <SignIn />
+      )}
+    </div>
   );
 };
 

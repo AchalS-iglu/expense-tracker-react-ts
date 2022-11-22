@@ -1,4 +1,4 @@
-import React, { useContext, createContext } from "react";
+import React, { useContext, createContext, useEffect, useState } from "react";
 import {
   GoogleAuthProvider,
   signInWithPopup,
@@ -9,22 +9,24 @@ import {
 import { FirebaseAuth } from "./initFirebase";
 
 interface IContext {
-  // user: firebase.User | null;
+  user: firebase.default.UserInfo | null;
   // loading: boolean;
-  // logout: () => {};
+  logOut: () => void;
   googleSignIn: () => void;
 }
 
 const AuthContext = createContext<IContext>({
-  // user: null,
+  user: null,
   // loading: false,
-  // logout: () => { },
+  logOut: () => {},
   googleSignIn: () => {},
 });
 
 const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const [user, setUser] = useState<firebase.default.UserInfo | null>(null);
+
   const googleSignIn = () => {
     const provider = new GoogleAuthProvider();
     signInWithPopup(FirebaseAuth, provider)
@@ -36,8 +38,33 @@ const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
       });
   };
 
+  const logOut = () => {
+    signOut(FirebaseAuth)
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(FirebaseAuth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        console.log("User", currentUser);
+      } else {
+        setUser(null);
+        console.log("User", currentUser);
+      }
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ googleSignIn }}>
+    <AuthContext.Provider value={{ user, googleSignIn, logOut }}>
       {children}
     </AuthContext.Provider>
   );
