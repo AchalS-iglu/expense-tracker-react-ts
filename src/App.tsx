@@ -10,7 +10,6 @@ import AddExpenseForm from "./components/AddExpenseForm";
 
 import { UserAuth } from "./Firebase/AuthContext";
 import SignIn from "./components/SignIn";
-import Footer from "./components/Footer";
 
 const App = () => {
   const { user, logOut } = UserAuth();
@@ -89,7 +88,6 @@ const App = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

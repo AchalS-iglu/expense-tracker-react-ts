@@ -1,7 +1,6 @@
 import React from "react";
 
 import { UserAuth } from "../Firebase/AuthContext";
-import Footer from "./Footer";
 
 const SignIn = () => {
   const { googleSignIn, loading } = UserAuth();
