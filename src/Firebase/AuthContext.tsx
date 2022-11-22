@@ -10,14 +10,14 @@ import { FirebaseAuth } from "./initFirebase";
 
 interface IContext {
   user: firebase.default.UserInfo | null;
-  // loading: boolean;
+  loading: boolean;
   logOut: () => void;
   googleSignIn: () => void;
 }
 
 const AuthContext = createContext<IContext>({
   user: null,
-  // loading: false,
+  loading: false,
   logOut: () => {},
   googleSignIn: () => {},
 });
@@ -26,10 +26,11 @@ const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<firebase.default.UserInfo | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const googleSignIn = () => {
     const provider = new GoogleAuthProvider();
-    signInWithPopup(FirebaseAuth, provider)
+    signInWithRedirect(FirebaseAuth, provider)
       .then((result) => {
         console.log(result);
       })
@@ -48,23 +49,32 @@ const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
       });
   };
 
+  // useEffect(() => {
+  //   const unsubscribe = onAuthStateChanged(FirebaseAuth, (currentUser) => {
+  //     if (currentUser) {
+  //       setUser(currentUser);
+  //       console.log("User", currentUser);
+  //     } else {
+  //       setUser(null);
+  //       console.log("User", currentUser);
+  //     }
+  //   });
+  //   return () => {
+  //     unsubscribe();
+  //   };
+  // }, []);
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(FirebaseAuth, (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        console.log("User", currentUser);
-      } else {
-        setUser(null);
-        console.log("User", currentUser);
-      }
+    const cancelAuthListener = FirebaseAuth.onIdTokenChanged((u) => {
+      setUser(u);
+      setLoading(false);
     });
-    return () => {
-      unsubscribe();
-    };
+
+    return () => cancelAuthListener();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, googleSignIn, logOut }}>
+    <AuthContext.Provider value={{ user, loading, googleSignIn, logOut }}>
       {children}
     </AuthContext.Provider>
   );
