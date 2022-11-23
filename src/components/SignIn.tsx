@@ -1,9 +1,9 @@
 import React from "react";
 
-import { UserAuth } from "../Firebase/AuthContext";
+import { UserAuth } from "../lib/Firebase/AuthContext";
 
 const SignIn = () => {
-  const { googleSignIn, loading } = UserAuth();
+  const { googleSignIn, githubSignIn, loading } = UserAuth();
   return (
     <section
       className="vh-100 gradient-custom"
@@ -17,7 +17,7 @@ const SignIn = () => {
               style={{ borderRadius: "1rem", backgroundColor: "#A7CCED" }}
             >
               <div className="card-body p-5 text-center">
-                <div className="mb-md-5 mt-md-4 text-dark">
+                <div className="mb-md-5 mt-4 text-dark">
                   <img
                     className="mb-3"
                     src="https://avatars.githubusercontent.com/u/45008879?v=4"
@@ -27,7 +27,8 @@ const SignIn = () => {
                   <br />
                   <span className="text-light">Welcome to</span>
                   <h1 className="mb-3">iglu boi's expense tracker</h1>
-                  <h2 className="fw-bold mb-5 text-uppercase">Login</h2>
+                  <hr className="text-light" />
+                  <h2 className="fw-bold mb-4 text-uppercase">Login</h2>
                   {loading ? (
                     <div>
                       <div className="d-flex justify-content-center">
@@ -49,15 +50,15 @@ const SignIn = () => {
                           Signin Using Google
                         </span>
                       </div>
-                      <div className="" onClick={googleSignIn}>
+                      {/* <div className="mb-3" onClick={githubSignIn}>
                         <span className="btn btn-lg btn-google btn-block text-uppercase btn-outline border-dark rounded text-dark">
                           <img
-                            src="https://img.icons8.com/color/16/000000/google-logo.png"
-                            alt="Login with Google"
+                            src="https://img.icons8.com/color/16/000000/github-logo.png"
+                            alt="Login with GitHub"
                           />{" "}
-                          Signin Using Google
+                          Signin Using GitHub
                         </span>
-                      </div>
+                      </div> */}
                     </div>
                   )}
                   {/* <p className="text-white-50 mb-5">

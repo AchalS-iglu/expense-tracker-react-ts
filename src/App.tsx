@@ -8,11 +8,12 @@ import ExpenseTotal from "./components/ExpenseTotal";
 import ExpenseList from "./components/ExpenseList";
 import AddExpenseForm from "./components/AddExpenseForm";
 
-import { UserAuth } from "./Firebase/AuthContext";
+import { UserAuth } from "./lib/Firebase/AuthContext";
 import SignIn from "./components/SignIn";
+import NavBar from "./components/NavBar";
 
 const App = () => {
-  const { user, logOut } = UserAuth();
+  const { user } = UserAuth();
 
   if (!user)
     return (
@@ -24,29 +25,7 @@ const App = () => {
   return (
     <div>
       <div className="container">
-        <nav className="navbar navbar-expand-lg bg-light">
-          <div className="container-fluid">
-            <a className="navbar-brand" href="/">
-              My Budget Planner
-            </a>
-            <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-              <li className="nav-item dropdown">
-                <span className="nav-link dropdown-toggle" role="button">
-                  Month
-                </span>
-              </li>
-            </ul>
-            <div className="navbar-nav">
-              <button
-                className="btn btn-outline-danger"
-                type="submit"
-                onClick={logOut}
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </nav>
+        <NavBar />
         <div className="container">
           <div className="row mt-3 gap-2">
             <div className="col-sm rounded border border-primary border border-info">
