@@ -2,7 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 
 import App from "./App";
-import { AuthContextProvider } from "./Firebase/AuthContext";
+import { AuthContextProvider } from "./lib/Firebase/AuthContext";
+import { DBContextProvider } from "./lib/Firebase/DBContext";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -10,7 +11,9 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <AuthContextProvider>
-      <App />
+      <DBContextProvider>
+        <App />
+      </DBContextProvider>
     </AuthContextProvider>
   </React.StrictMode>
 );
