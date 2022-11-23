@@ -1,35 +1,44 @@
 import {
   collection,
+  doc,
+  getDoc,
   getDocs,
   query,
   Timestamp,
   where,
 } from "firebase/firestore";
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 import { Firestore } from "./initFirebase";
 import { t_expenses, month_year, user, month_ed } from "../models";
 
 interface IContext {
-  add: () => void;
+  getExpenses: (month: number, year: number) => void;
+  getUserData: (user: string) => void;
+  expenses: t_expenses[];
+  budget: number;
 }
 
 const DBContext = createContext<IContext>({
-  add: () => {},
+  getExpenses: () => {},
+  getUserData: () => {},
+  expenses: [],
+  budget: 0,
 });
 
 const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [expenses, setExpenses] = useState<t_expenses[]>([]);
+  const [monthsList, setMonthsList] = useState<string[]>([]);
+  const [budget, setBudget] = useState<number>(0);
 
-  useEffect(() => {
-    getExpenses(11, 2022);
-    console.log(expenses);
-  }, []);
+  // useEffect(() => {
+  //   getUserData("user");
+  // }, []);
 
-  useEffect(() => {
-    console.log(expenses);
-  }, [expenses]);
+  // useEffect(() => {
+  //   console.log(budget);
+  // }, [budget]);
 
   const getExpenses = (month: number, year: number) => {
     const expensesCollectionRef = collection(
@@ -51,14 +60,10 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
     );
     getDocs(q)
       .then((result) => {
-        // console.log(
-        //   result.docs.map((doc) => ({ doc: doc.data(), id: doc.id }))
-        // );
         const r_expenses = result.docs.map((doc) => ({
           id: doc.id,
           data: doc.data(),
         }));
-        // console.log(r_expenses);
         setExpenses(r_expenses);
       })
       .catch((error) => {
@@ -66,9 +71,32 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
       });
   };
 
-  const add = () => null;
+  const getUserData = (user: string) => {
+    const expensesCollectionRef = doc(Firestore, `/expenses/${user}`);
 
-  return <DBContext.Provider value={{ add }}> {children}</DBContext.Provider>;
+    getDoc(expensesCollectionRef)
+      .then((result) => {
+          const data = result.data();
+        if (data) {
+          setMonthsList(data.months);
+          setBudget(data.def_budget);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  return (
+    <DBContext.Provider value={{ getExpenses, getUserData, expenses, budget }}>
+      {" "}
+      {children}
+    </DBContext.Provider>
+  );
 };
 
-export { DBContextProvider };
+const DB = () => {
+  return useContext(DBContext);
+};
+
+export { DBContextProvider, DB };

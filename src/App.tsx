@@ -1,19 +1,35 @@
-import React from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 
-import Budget from "./components/Budget";
-import Remaining from "./components/Remaining";
-import ExpenseTotal from "./components/ExpenseTotal";
 import ExpenseList from "./components/ExpenseList";
 import AddExpenseForm from "./components/AddExpenseForm";
 
 import { UserAuth } from "./lib/Firebase/AuthContext";
 import SignIn from "./components/SignIn";
 import NavBar from "./components/NavBar";
+import BudgetBar from "./components/BudgetBar";
+import { DB } from "./lib/Firebase/DBContext";
 
 const App = () => {
   const { user } = UserAuth();
+  const { getExpenses, getUserData, budget, expenses } = DB();
+
+  const [total, setTotal] = useState<number>(0);
+  const [rem, setRem] = useState<number>(0);
+  const [month, setMonth] = useState<number>(0);
+
+  useEffect(() => {
+    if (user) {
+      getUserData("user");
+      const today = new Date();
+
+      setMonth(today.getMonth() + 1);
+
+      getExpenses(today.getMonth() + 1, today.getFullYear());
+      setTotal(1000);
+      setRem(budget - total);
+    }
+  }, [user]);
 
   if (!user)
     return (
@@ -43,16 +59,8 @@ const App = () => {
           </div>
         </div>
         {/* <h1 className="mt-3">My Budget Planner</h1> */}
-        <div className="row mt-3">
-          <div className="col-sm">
-            <Budget />
-          </div>
-          <div className="col-sm">
-            <Remaining />
-          </div>
-          <div className="col-sm">
-            <ExpenseTotal />
-          </div>
+        <div>
+          <BudgetBar budget={budget} total={total} rem={rem} />
         </div>
         <h3 className="mt-3">Expenses</h3>
         <div className="row mt-3">
