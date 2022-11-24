@@ -1,0 +1,17 @@
+.dropdown-menu.show {
+  display: flex;
+  width: 450px;
+  flex-wrap: wrap;
+}
+
+.dropdown-item {
+  width: 33, 33%;
+}
+
+.navbar-nav .dropdown-menu {
+  position: absolute;
+}
+
+.month-btn {
+  width: 95%;
+}

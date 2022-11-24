@@ -12,11 +12,12 @@ import { DB } from "./lib/Firebase/DBContext";
 
 const App = () => {
   const { user } = UserAuth();
-  const { getExpenses, getUserData, budget, expenses } = DB();
+  const { getExpenses, getUserData, budget } = DB();
 
   const [total, setTotal] = useState<number>(0);
   const [rem, setRem] = useState<number>(0);
   const [month, setMonth] = useState<number>(0);
+  const [year, setYear] = useState<number>(0);
 
   useEffect(() => {
     if (user) {
@@ -24,12 +25,32 @@ const App = () => {
       const today = new Date();
 
       setMonth(today.getMonth() + 1);
+      setYear(today.getFullYear());
 
       getExpenses(today.getMonth() + 1, today.getFullYear());
       setTotal(1000);
       setRem(budget - total);
     }
   }, [user]);
+
+  useEffect(() => {
+    console.log(month);
+    try {
+      getExpenses(month, year);
+      setTotal(1000);
+      setRem(budget - total);
+    } catch (error) {
+      console.log(error);
+      const today = new Date();
+
+      setMonth(today.getMonth() + 1);
+      setYear(today.getFullYear());
+
+      getExpenses(today.getMonth() + 1, today.getFullYear());
+      setTotal(1000);
+      setRem(budget - total);
+    }
+  }, [month]);
 
   if (!user)
     return (
@@ -41,7 +62,7 @@ const App = () => {
   return (
     <div>
       <div className="container">
-        <NavBar />
+        <NavBar year={year} setYear={setYear} setMonth={setMonth} />
         <div className="container">
           <div className="row mt-3 gap-2">
             <div className="col-sm rounded border border-primary border border-info">
