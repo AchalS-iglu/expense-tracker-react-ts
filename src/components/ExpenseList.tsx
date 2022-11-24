@@ -16,9 +16,9 @@ const ExpenseList = () => {
       {expenses.map((expense) => (
         <ExpenseItem
           id={expense.id}
-          name={expense.data.name}
-          cost={expense.data.cost}
-          date={expense.data.timestamp}
+          name={expense.name}
+          cost={expense.cost}
+          date={expense.date}
         />
       ))}
     </ul>

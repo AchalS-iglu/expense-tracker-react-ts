@@ -45,9 +45,6 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [expenses, setExpenses] = useState<t_expenses[]>([]);
-  // const [monthsList, setMonthsList] = useState<Array<monthYear_t>>([
-  //   initialMonthYear(),
-  // ]);
   const [budget, setBudget] = useState<number>(0);
 
   const getExpenses = (monthYear: monthYear_t) => {
@@ -75,7 +72,10 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
       .then((result) => {
         const r_expenses = result.docs.map((doc) => ({
           id: doc.id,
-          data: doc.data(),
+          // data: doc.data(),
+          name: doc.data().name,
+          cost: doc.data().cost,
+          date: doc.data().timestamp,
         }));
         setExpenses(r_expenses);
       })
@@ -113,7 +113,13 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <DBContext.Provider
-      value={{ getExpenses, getBudget, expenses, budget, setBudget }}
+      value={{
+        getExpenses,
+        getBudget,
+        expenses,
+        budget,
+        setBudget,
+      }}
     >
       {" "}
       {children}

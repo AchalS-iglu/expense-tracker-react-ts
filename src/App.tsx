@@ -14,12 +14,21 @@ import { monthYearActionKind } from "./lib/reusables";
 
 const App = () => {
   const { user } = UserAuth();
-  const { getExpenses, getBudget, budget, setBudget } = DB();
+  const { getExpenses, getBudget, budget, expenses, setBudget } = DB();
   const { monthYear, dispatchMonthYear } = State();
-
   const [totalSpent, setTotalSpent] = useState<number>(0);
-  // const [month, setMonth] = useState<number>(0);
-  // const [year, setYear] = useState<number>(0);
+
+  const getTotalSpent = () => {
+    let total = 0;
+    for (let expense of expenses) {
+      total += expense.cost;
+    }
+    setTotalSpent(total);
+  };
+
+  useEffect(() => {
+    getTotalSpent();
+  });
 
   useEffect(() => {
     if (user) {
@@ -43,7 +52,7 @@ const App = () => {
       });
 
       getExpenses(monthYear);
-      setTotalSpent(1000);
+      getTotalSpent();
     }
   }, [user]);
 
@@ -51,7 +60,7 @@ const App = () => {
     try {
       getBudget("user", monthYear);
       getExpenses(monthYear);
-      setTotalSpent(1000);
+      getTotalSpent();
     } catch (error) {
       console.log(error);
     }

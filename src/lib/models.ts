@@ -2,7 +2,10 @@ import { DocumentData, Timestamp } from "firebase/firestore";
 
 export type t_expenses = {
   id: string;
-  data: DocumentData;
+  // data: DocumentData;
+  name: string;
+  cost: number;
+  date: Timestamp;
 };
 
 export type month_year = {
