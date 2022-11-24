@@ -1,20 +1,18 @@
 import React, { useState } from "react";
 
 interface props {
-  year: number;
+  DYear: number;
   setMonth: React.Dispatch<React.SetStateAction<number>>;
+  setYear: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const MonthSelector = (props: props) => {
-  const changeMonth = (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-    month: number
-  ) => {
-    e.preventDefault();
-    console.log(month);
+  const changeMonth = (month: number) => {
     props.setMonth(month);
+    props.setYear(props.DYear);
     return undefined;
   };
+
   return (
     <div className="container p-2 align-items-center">
       <div>
@@ -22,7 +20,7 @@ const MonthSelector = (props: props) => {
           {"<"}
         </button>
         <span className="btn year" style={{ width: "50%" }}>
-          {props.year}
+          {props.DYear}
         </span>
         <button className="btn addyear" style={{ width: "25%" }}>
           {">"}
@@ -33,19 +31,19 @@ const MonthSelector = (props: props) => {
           <td>
             <button
               className="btn border-dark m-1 btn-outline month-btn"
-              onClick={(e) => changeMonth(e, 1)}
+              onClick={(e) => changeMonth(1)}
             >
               January
             </button>
             <button
               className="btn border-dark m-1 btn-outline month-btn"
-              onClick={(e) => changeMonth(e, 2)}
+              onClick={(e) => changeMonth(2)}
             >
               February
             </button>
             <button
               className="btn border-dark m-1 btn-outline month-btn"
-              onClick={(e) => changeMonth(e, 3)}
+              onClick={(e) => changeMonth(3)}
             >
               March
             </button>
@@ -53,19 +51,19 @@ const MonthSelector = (props: props) => {
           <td>
             <button
               className="btn border-dark m-1 btn-outline month-btn"
-              onClick={(e) => changeMonth(e, 4)}
+              onClick={(e) => changeMonth(4)}
             >
               April
             </button>
             <button
               className="btn border-dark m-1 btn-outline month-btn"
-              onClick={(e) => changeMonth(e, 5)}
+              onClick={(e) => changeMonth(5)}
             >
               May
             </button>
             <button
               className="btn border-dark m-1 btn-outline month-btn"
-              onClick={(e) => changeMonth(e, 6)}
+              onClick={(e) => changeMonth(6)}
             >
               June
             </button>
@@ -73,19 +71,19 @@ const MonthSelector = (props: props) => {
           <td>
             <button
               className="btn border-dark m-1 btn-outline month-btn"
-              onClick={(e) => changeMonth(e, 7)}
+              onClick={(e) => changeMonth(7)}
             >
               July
             </button>
             <button
               className="btn border-dark m-1 btn-outline month-btn"
-              onClick={(e) => changeMonth(e, 8)}
+              onClick={(e) => changeMonth(8)}
             >
               August
             </button>
             <button
               className="btn border-dark m-1 btn-outline month-btn"
-              onClick={(e) => changeMonth(e, 9)}
+              onClick={(e) => changeMonth(9)}
             >
               September
             </button>
@@ -93,19 +91,19 @@ const MonthSelector = (props: props) => {
           <td>
             <button
               className="btn border-dark m-1 btn-outline month-btn"
-              onClick={(e) => changeMonth(e, 10)}
+              onClick={(e) => changeMonth(10)}
             >
               October
             </button>
             <button
               className="btn border-dark m-1 btn-outline month-btn"
-              onClick={(e) => changeMonth(e, 11)}
+              onClick={(e) => changeMonth(11)}
             >
               November
             </button>
             <button
               className="btn border-dark m-1 btn-outline month-btn"
-              onClick={(e) => changeMonth(e, 12)}
+              onClick={(e) => changeMonth(12)}
             >
               December
             </button>

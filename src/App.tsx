@@ -40,7 +40,6 @@ const App = () => {
       setTotal(1000);
       setRem(budget - total);
     } catch (error) {
-      console.log(error);
       const today = new Date();
 
       setMonth(today.getMonth() + 1);
@@ -67,7 +66,9 @@ const App = () => {
           <div className="row mt-3 gap-2">
             <div className="col-sm rounded border border-primary border border-info">
               <ul className="list-group list-group-flush">
-                <li className="list-group-item">Month</li>
+                <li className="list-group-item">
+                  Month Selected: {month}-{year}
+                </li>
               </ul>
             </div>
             <div className="col-sm rounded border border-primary border border-info">
