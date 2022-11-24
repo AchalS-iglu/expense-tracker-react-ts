@@ -10,37 +10,50 @@ import {
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { Firestore } from "./initFirebase";
 import { t_expenses, month_year, user, month_ed } from "../models";
+import { monthYear_t, initialMonthYear } from "../reusables";
+
+function formatMonthsList(monthsListData: Array<string>) {
+  let monthsList = [];
+  for (let data of monthsListData) {
+    let data_split = data.split("-");
+    monthsList.push({
+      month: Number(data_split[0]),
+      year: Number(data_split[1]),
+      budget: Number(data_split[2]),
+    });
+  }
+  return monthsList;
+}
 
 interface IContext {
-  getExpenses: (month: number, year: number) => void;
-  getUserData: (user: string) => void;
+  getExpenses: (monthYear_t: monthYear_t) => void;
+  getBudget: (user: string, monthYear: monthYear_t) => void;
   expenses: t_expenses[];
   budget: number;
+  setBudget: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const DBContext = createContext<IContext>({
   getExpenses: () => {},
-  getUserData: () => {},
+  getBudget: () => {},
   expenses: [],
   budget: 0,
+  setBudget: () => {},
 });
 
 const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [expenses, setExpenses] = useState<t_expenses[]>([]);
-  const [monthsList, setMonthsList] = useState<string[]>([]);
+  // const [monthsList, setMonthsList] = useState<Array<monthYear_t>>([
+  //   initialMonthYear(),
+  // ]);
   const [budget, setBudget] = useState<number>(0);
 
-  // useEffect(() => {
-  //   getUserData("user");
-  // }, []);
+  const getExpenses = (monthYear: monthYear_t) => {
+    let month = monthYear.month;
+    let year = monthYear.year;
 
-  // useEffect(() => {
-  //   console.log(budget);
-  // }, [budget]);
-
-  const getExpenses = (month: number, year: number) => {
     const expensesCollectionRef = collection(
       Firestore,
       "/expenses/user/expenses/"
@@ -71,15 +84,26 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
       });
   };
 
-  const getUserData = (user: string) => {
+  const getBudget = (user: string, monthYear: monthYear_t) => {
     const expensesCollectionRef = doc(Firestore, `/expenses/${user}`);
 
     getDoc(expensesCollectionRef)
       .then((result) => {
-          const data = result.data();
+        const data = result.data();
         if (data) {
-          setMonthsList(data.months);
-          setBudget(data.def_budget);
+          let tempMonthsList = formatMonthsList(data.months);
+          for (let tempMonthYear of tempMonthsList) {
+            if (
+              tempMonthYear.month === monthYear.month &&
+              tempMonthYear.year === monthYear.year &&
+              tempMonthYear.budget
+            ) {
+              setBudget(tempMonthYear.budget);
+            } else {
+              setBudget(data.def_budget);
+            }
+          }
+          // setMonthsList(tempMonthsList);
         }
       })
       .catch((error) => {
@@ -88,7 +112,9 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <DBContext.Provider value={{ getExpenses, getUserData, expenses, budget }}>
+    <DBContext.Provider
+      value={{ getExpenses, getBudget, expenses, budget, setBudget }}
+    >
       {" "}
       {children}
     </DBContext.Provider>

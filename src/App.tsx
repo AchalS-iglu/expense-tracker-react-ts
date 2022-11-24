@@ -9,47 +9,53 @@ import SignIn from "./components/SignIn";
 import NavBar from "./components/NavBar";
 import BudgetBar from "./components/BudgetBar";
 import { DB } from "./lib/Firebase/DBContext";
+import { State } from "./lib/States";
+import { monthYearActionKind } from "./lib/reusables";
 
 const App = () => {
   const { user } = UserAuth();
-  const { getExpenses, getUserData, budget } = DB();
+  const { getExpenses, getBudget, budget, setBudget } = DB();
+  const { monthYear, dispatchMonthYear } = State();
 
-  const [total, setTotal] = useState<number>(0);
-  const [rem, setRem] = useState<number>(0);
-  const [month, setMonth] = useState<number>(0);
-  const [year, setYear] = useState<number>(0);
+  const [totalSpent, setTotalSpent] = useState<number>(0);
+  // const [month, setMonth] = useState<number>(0);
+  // const [year, setYear] = useState<number>(0);
 
   useEffect(() => {
     if (user) {
-      getUserData("user");
       const today = new Date();
 
-      setMonth(today.getMonth() + 1);
-      setYear(today.getFullYear());
+      dispatchMonthYear({
+        type: monthYearActionKind.SET_MONTH,
+        payload: today.getMonth() + 1,
+      });
 
-      getExpenses(today.getMonth() + 1, today.getFullYear());
-      setTotal(1000);
-      setRem(budget - total);
+      dispatchMonthYear({
+        type: monthYearActionKind.SET_YEAR,
+        payload: today.getFullYear(),
+      });
+
+      getBudget("user", monthYear);
+
+      dispatchMonthYear({
+        type: monthYearActionKind.SET_BUDGET,
+        payload: budget,
+      });
+
+      getExpenses(monthYear);
+      setTotalSpent(1000);
     }
   }, [user]);
 
   useEffect(() => {
-    console.log(month);
     try {
-      getExpenses(month, year);
-      setTotal(1000);
-      setRem(budget - total);
+      getBudget("user", monthYear);
+      getExpenses(monthYear);
+      setTotalSpent(1000);
     } catch (error) {
-      const today = new Date();
-
-      setMonth(today.getMonth() + 1);
-      setYear(today.getFullYear());
-
-      getExpenses(today.getMonth() + 1, today.getFullYear());
-      setTotal(1000);
-      setRem(budget - total);
+      console.log(error);
     }
-  }, [month]);
+  }, [monthYear]);
 
   if (!user)
     return (
@@ -61,13 +67,13 @@ const App = () => {
   return (
     <div>
       <div className="container">
-        <NavBar year={year} setYear={setYear} setMonth={setMonth} />
+        <NavBar />
         <div className="container">
           <div className="row mt-3 gap-2">
             <div className="col-sm rounded border border-primary border border-info">
               <ul className="list-group list-group-flush">
                 <li className="list-group-item">
-                  Month Selected: {month}-{year}
+                  Month Selected: {monthYear.month}-{monthYear.year}
                 </li>
               </ul>
             </div>
@@ -82,7 +88,11 @@ const App = () => {
         </div>
         {/* <h1 className="mt-3">My Budget Planner</h1> */}
         <div>
-          <BudgetBar budget={budget} total={total} rem={rem} />
+          <BudgetBar
+            budget={budget}
+            total={totalSpent}
+            rem={budget - totalSpent}
+          />
         </div>
         <h3 className="mt-3">Expenses</h3>
         <div className="row mt-3">

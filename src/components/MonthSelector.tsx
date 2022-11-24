@@ -1,15 +1,23 @@
 import React, { useState } from "react";
+import { monthYearActionKind } from "../lib/reusables";
+import { State } from "../lib/States";
 
 interface props {
   DYear: number;
-  setMonth: React.Dispatch<React.SetStateAction<number>>;
-  setYear: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const MonthSelector = (props: props) => {
+  const { dispatchMonthYear } = State();
+
   const changeMonth = (month: number) => {
-    props.setMonth(month);
-    props.setYear(props.DYear);
+    dispatchMonthYear({
+      type: monthYearActionKind.SET_MONTH,
+      payload: month,
+    });
+    dispatchMonthYear({
+      type: monthYearActionKind.SET_YEAR,
+      payload: props.DYear,
+    });
     return undefined;
   };
 

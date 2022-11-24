@@ -2,14 +2,12 @@ import React, { useState } from "react";
 import { UserAuth } from "../lib/Firebase/AuthContext";
 import MonthSelector from "./MonthSelector";
 import $ from "jquery";
-interface props {
-  year: number;
-  setYear: React.Dispatch<React.SetStateAction<number>>;
-  setMonth: React.Dispatch<React.SetStateAction<number>>;
-}
+import { State } from "../lib/States";
 
-const NavBar = (props: props) => {
-  const [DYear, setDYear] = useState(props.year);
+const NavBar = () => {
+  const { monthYear } = State();
+
+  const [DYear, setDYear] = useState(monthYear.year);
 
   const { logOut } = UserAuth();
 
@@ -42,17 +40,13 @@ const NavBar = (props: props) => {
               data-bs-toggle="dropdown"
               aria-haspopup="true"
               onClick={(e) => {
-                setDYear(props.year);
+                setDYear(monthYear.year);
               }}
             >
               Month
             </span>
             <div className="container text-center dropdown-menu">
-              <MonthSelector
-                DYear={DYear}
-                setMonth={props.setMonth}
-                setYear={props.setYear}
-              />
+              <MonthSelector DYear={DYear} />
             </div>
           </li>
         </ul>
