@@ -5,49 +5,49 @@ import {
   getDocs,
   query,
   Timestamp,
+  updateDoc,
   where,
 } from "firebase/firestore";
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useContext } from "react";
 import { Firestore } from "./initFirebase";
-import { t_expenses, month_year, user, month_ed } from "../models";
-import { monthYear_t, initialMonthYear } from "../reusables";
-
-function formatMonthsList(monthsListData: Array<string>) {
-  let monthsList = [];
-  for (let data of monthsListData) {
-    let data_split = data.split("-");
-    monthsList.push({
-      month: Number(data_split[0]),
-      year: Number(data_split[1]),
-      budget: Number(data_split[2]),
-    });
-  }
-  return monthsList;
-}
-
+import {
+  monthYear_t,
+  monthYearAction,
+  monthYearActionKind,
+  expensesAction,
+  expensesActionKind,
+} from "../reusables";
 interface IContext {
-  getExpenses: (monthYear_t: monthYear_t) => void;
-  getBudget: (user: string, monthYear: monthYear_t) => void;
-  expenses: t_expenses[];
-  budget: number;
-  setBudget: React.Dispatch<React.SetStateAction<number>>;
+  getExpenses: (
+    monthYear: monthYear_t,
+    dispatchExpenses: React.Dispatch<expensesAction>
+  ) => void;
+  getBudget: (
+    user: string,
+    monthYear: monthYear_t,
+    dispatchMonthYear: React.Dispatch<monthYearAction>
+  ) => void;
+  updateCurrentBudget: (
+    user: string,
+    monthYear: monthYear_t,
+    dispatchMonthYear: React.Dispatch<monthYearAction>
+  ) => void;
 }
 
 const DBContext = createContext<IContext>({
   getExpenses: () => {},
   getBudget: () => {},
-  expenses: [],
-  budget: 0,
-  setBudget: () => {},
+  updateCurrentBudget: () => {},
 });
 
 const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [expenses, setExpenses] = useState<t_expenses[]>([]);
-  const [budget, setBudget] = useState<number>(0);
 
-  const getExpenses = (monthYear: monthYear_t) => {
+  const getExpenses = (
+    monthYear: monthYear_t,
+    dispatchExpenses: React.Dispatch<expensesAction>
+  ) => {
     let month = monthYear.month;
     let year = monthYear.year;
 
@@ -72,38 +72,108 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
       .then((result) => {
         const r_expenses = result.docs.map((doc) => ({
           id: doc.id,
-          // data: doc.data(),
           name: doc.data().name,
           cost: doc.data().cost,
           date: doc.data().timestamp,
         }));
-        setExpenses(r_expenses);
+        for (let expense of r_expenses) {
+          dispatchExpenses({
+            type: expensesActionKind.ADD_EXPENSE,
+            payload: expense,
+          });
+        }
       })
       .catch((error) => {
         console.log(error);
       });
   };
 
-  const getBudget = (user: string, monthYear: monthYear_t) => {
+  
+
+  const getBudget = (
+    user: string,
+    monthYear: monthYear_t,
+    dispatchMonthYear: React.Dispatch<monthYearAction>
+  ) => {
     const expensesCollectionRef = doc(Firestore, `/expenses/${user}`);
 
     getDoc(expensesCollectionRef)
       .then((result) => {
         const data = result.data();
         if (data) {
-          let tempMonthsList = formatMonthsList(data.months);
+          let finished = false;
+          let tempMonthsList = [...data.months];
           for (let tempMonthYear of tempMonthsList) {
             if (
               tempMonthYear.month === monthYear.month &&
               tempMonthYear.year === monthYear.year &&
               tempMonthYear.budget
             ) {
-              setBudget(tempMonthYear.budget);
-            } else {
-              setBudget(data.def_budget);
+              dispatchMonthYear({
+                type: monthYearActionKind.SET_BUDGET,
+                payload: tempMonthYear.budget,
+              });
+              finished = true;
             }
           }
-          // setMonthsList(tempMonthsList);
+          if (!finished) {
+            if (data.def_budget) {
+              dispatchMonthYear({
+                type: monthYearActionKind.SET_BUDGET,
+                payload: data.def_budget,
+              });
+            } else {
+              dispatchMonthYear({
+                type: monthYearActionKind.SET_BUDGET,
+                payload: 5000,
+              });
+            }
+          }
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const updateCurrentBudget = async (
+    user: string,
+    monthYear: monthYear_t,
+    dispatchMonthYear: React.Dispatch<monthYearAction>
+  ) => {
+    dispatchMonthYear({
+      type: monthYearActionKind.SET_BUDGET,
+      payload: monthYear.budget,
+    });
+
+    const expensesCollectionRef = doc(Firestore, `/expenses/${user}`);
+    let operatingMonthList: monthYear_t[] = [];
+
+    getDoc(expensesCollectionRef)
+      .then((result) => {
+        const data = result.data();
+        if (data) {
+          if (data.months.length !== 0 && data.months) {
+            let tempMonthsList = [...data.months];
+            operatingMonthList = [];
+            for (let tempMonthYear of tempMonthsList) {
+              if (
+                tempMonthYear.month === monthYear.month &&
+                tempMonthYear.year === monthYear.year
+              ) {
+                operatingMonthList.push(monthYear);
+              } else {
+                operatingMonthList.push(tempMonthYear);
+              }
+            }
+            updateDoc(expensesCollectionRef, {
+              months: operatingMonthList,
+            });
+          } else {
+            updateDoc(expensesCollectionRef, {
+              months: [monthYear],
+            });
+          }
         }
       })
       .catch((error) => {
@@ -114,11 +184,9 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <DBContext.Provider
       value={{
-        getExpenses,
         getBudget,
-        expenses,
-        budget,
-        setBudget,
+        getExpenses,
+        updateCurrentBudget,
       }}
     >
       {" "}

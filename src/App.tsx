@@ -14,8 +14,8 @@ import { monthYearActionKind } from "./lib/reusables";
 
 const App = () => {
   const { user } = UserAuth();
-  const { getExpenses, getBudget, budget, expenses, setBudget } = DB();
-  const { monthYear, dispatchMonthYear } = State();
+  const { getExpenses, getBudget } = DB();
+  const { monthYear, dispatchMonthYear, expenses, dispatchExpenses } = State();
   const [totalSpent, setTotalSpent] = useState<number>(0);
 
   const getTotalSpent = () => {
@@ -28,6 +28,7 @@ const App = () => {
 
   useEffect(() => {
     getTotalSpent();
+    console.log(expenses)
   });
 
   useEffect(() => {
@@ -44,27 +45,27 @@ const App = () => {
         payload: today.getFullYear(),
       });
 
-      getBudget("user", monthYear);
+      getBudget("user", monthYear, dispatchMonthYear);
 
       dispatchMonthYear({
         type: monthYearActionKind.SET_BUDGET,
-        payload: budget,
+        payload: monthYear.budget,
       });
 
-      getExpenses(monthYear);
+      getExpenses(monthYear, dispatchExpenses);
       getTotalSpent();
     }
-  }, [user]);
+  }, [user?.uid]);
 
   useEffect(() => {
     try {
-      getBudget("user", monthYear);
-      getExpenses(monthYear);
+      getBudget("user", monthYear, dispatchMonthYear);
+      getExpenses(monthYear, dispatchExpenses);
       getTotalSpent();
     } catch (error) {
       console.log(error);
     }
-  }, [monthYear]);
+  }, [monthYear.month, monthYear.year]);
 
   if (!user)
     return (
@@ -97,11 +98,7 @@ const App = () => {
         </div>
         {/* <h1 className="mt-3">My Budget Planner</h1> */}
         <div>
-          <BudgetBar
-            budget={budget}
-            total={totalSpent}
-            rem={budget - totalSpent}
-          />
+          <BudgetBar monthYear={monthYear} total={totalSpent} />
         </div>
         <h3 className="mt-3">Expenses</h3>
         <div className="row mt-3">

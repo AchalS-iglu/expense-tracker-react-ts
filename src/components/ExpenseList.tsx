@@ -1,5 +1,5 @@
 import React from "react";
-import { DB } from "../lib/Firebase/DBContext";
+import { State } from "../lib/States";
 import ExpenseItem from "./ExpenseItem";
 
 const ExpenseList = () => {
@@ -9,17 +9,12 @@ const ExpenseList = () => {
   //   { id: 14, name: "car service", cost: 50 },
   // ];
 
-  const { expenses } = DB();
+  const { expenses } = State();
 
   return (
     <ul className="list-group">
       {expenses.map((expense) => (
-        <ExpenseItem
-          id={expense.id}
-          name={expense.name}
-          cost={expense.cost}
-          date={expense.date}
-        />
+        <ExpenseItem expense={expense} />
       ))}
     </ul>
   );

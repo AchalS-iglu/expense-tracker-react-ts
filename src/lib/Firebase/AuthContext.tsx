@@ -60,32 +60,14 @@ const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
     const provider = new GithubAuthProvider();
     if (isFirefox || !isMobile) {
       await signInWithPopup(FirebaseAuth, provider)
-        .then((result) => {
-          console.log(result);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
     } else {
-      await signInWithRedirect(FirebaseAuth, provider)
-        .then((result) => {
-          console.log(result);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      await signInWithRedirect(FirebaseAuth, provider);
     }
     setLoading(false);
   };
 
   const logOut = async () => {
-    await signOut(FirebaseAuth)
-      .then((result) => {
-        console.log(result);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    await signOut(FirebaseAuth);
   };
 
   useEffect(() => {
