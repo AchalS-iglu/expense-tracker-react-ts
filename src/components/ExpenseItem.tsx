@@ -1,7 +1,7 @@
-import { Timestamp } from "firebase/firestore";
 import React from "react";
 import { TiDelete } from "react-icons/ti";
-import { expensesActionKind, expense_t } from "../lib/reusables";
+import { DB } from "../lib/Firebase/DBContext";
+import { expense_t } from "../lib/reusables";
 import { State } from "../lib/States";
 
 interface props {
@@ -9,15 +9,13 @@ interface props {
 }
 
 const ExpenseItem = (props: props) => {
-  const date = props.expense.date.toDate().toDateString();
-
+  const { delExpense } = DB();
   const { dispatchExpenses } = State();
 
+  const date = props.expense.date.toDate().toDateString();
+
   const handleDelete = () => {
-    dispatchExpenses({
-      type: expensesActionKind.REMOVE_EXPENSE,
-      payload: props.expense,
-    });
+    delExpense(props.expense, dispatchExpenses);
   };
 
   return (

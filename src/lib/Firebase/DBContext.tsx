@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -16,10 +17,19 @@ import {
   monthYearActionKind,
   expensesAction,
   expensesActionKind,
+  expense_t,
 } from "../reusables";
 interface IContext {
   getExpenses: (
     monthYear: monthYear_t,
+    dispatchExpenses: React.Dispatch<expensesAction>
+  ) => void;
+  updateExpense: (
+    expense: expense_t,
+    dispatchExpenses: React.Dispatch<expensesAction>
+  ) => void;
+  delExpense: (
+    expense: expense_t,
     dispatchExpenses: React.Dispatch<expensesAction>
   ) => void;
   getBudget: (
@@ -36,6 +46,8 @@ interface IContext {
 
 const DBContext = createContext<IContext>({
   getExpenses: () => {},
+  updateExpense: () => {},
+  delExpense: () => {},
   getBudget: () => {},
   updateCurrentBudget: () => {},
 });
@@ -43,7 +55,6 @@ const DBContext = createContext<IContext>({
 const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-
   const getExpenses = (
     monthYear: monthYear_t,
     dispatchExpenses: React.Dispatch<expensesAction>
@@ -88,7 +99,43 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
       });
   };
 
-  
+  const updateExpense = (
+    expense: expense_t,
+    dispatchExpenses: React.Dispatch<expensesAction>
+  ) => {
+    const expenseRef = doc(Firestore, "/expenses/user/expenses/", expense.id);
+    updateDoc(expenseRef, {
+      name: expense.name,
+      cost: expense.cost,
+      timestamp: expense.date,
+    })
+      .then(() => {
+        dispatchExpenses({
+          type: expensesActionKind.UPDATE_EXPENSE,
+          payload: expense,
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const delExpense = (
+    expense: expense_t,
+    dispatchExpenses: React.Dispatch<expensesAction>
+  ) => {
+    const expenseRef = doc(Firestore, `/expenses/user/expenses/${expense.id}`);
+    deleteDoc(expenseRef)
+      .then(() => {
+        dispatchExpenses({
+          type: expensesActionKind.REMOVE_EXPENSE,
+          payload: expense,
+        });
+      })
+      .catch((error) => {
+        console.error("Error removing document: ", error);
+      });
+  };
 
   const getBudget = (
     user: string,
@@ -185,6 +232,8 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
     <DBContext.Provider
       value={{
         getBudget,
+        updateExpense,
+        delExpense,
         getExpenses,
         updateCurrentBudget,
       }}
