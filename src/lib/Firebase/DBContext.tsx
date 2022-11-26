@@ -1,4 +1,5 @@
 import {
+  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -24,6 +25,10 @@ interface IContext {
     monthYear: monthYear_t,
     dispatchExpenses: React.Dispatch<expensesAction>
   ) => void;
+  addExpense: (
+    expense: expense_t,
+    dispatchExpenses: React.Dispatch<expensesAction>
+  ) => void;
   updateExpense: (
     expense: expense_t,
     dispatchExpenses: React.Dispatch<expensesAction>
@@ -46,6 +51,7 @@ interface IContext {
 
 const DBContext = createContext<IContext>({
   getExpenses: () => {},
+  addExpense: () => {},
   updateExpense: () => {},
   delExpense: () => {},
   getBudget: () => {},
@@ -76,8 +82,8 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const q = query(
       expensesCollectionRef,
-      where("timestamp", ">=", s_dt),
-      where("timestamp", "<", e_dt)
+      where("date", ">=", s_dt),
+      where("date", "<", e_dt)
     );
     getDocs(q)
       .then((result) => {
@@ -85,7 +91,7 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
           id: doc.id,
           name: doc.data().name,
           cost: doc.data().cost,
-          date: doc.data().timestamp,
+          date: doc.data().date,
         }));
         for (let expense of r_expenses) {
           dispatchExpenses({
@@ -93,6 +99,26 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
             payload: expense,
           });
         }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const addExpense = (
+    expense: expense_t,
+    dispatchExpenses: React.Dispatch<expensesAction>
+  ) => {
+    const expensesCollectionRef = collection(
+      Firestore,
+      "/expenses/user/expenses/"
+    );
+    addDoc(expensesCollectionRef, expense)
+      .then(() => {
+        dispatchExpenses({
+          type: expensesActionKind.ADD_EXPENSE,
+          payload: expense,
+        });
       })
       .catch((error) => {
         console.log(error);
@@ -107,7 +133,7 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
     updateDoc(expenseRef, {
       name: expense.name,
       cost: expense.cost,
-      timestamp: expense.date,
+      date: expense.date,
     })
       .then(() => {
         dispatchExpenses({
@@ -232,6 +258,7 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
     <DBContext.Provider
       value={{
         getBudget,
+        addExpense,
         updateExpense,
         delExpense,
         getExpenses,

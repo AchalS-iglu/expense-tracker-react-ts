@@ -47,7 +47,7 @@
     ]
   },
   "devDependencies": {
-    "react-scripts": "5.0.1",
-    "@types/jquery": "^3.5.14"
+    "@types/jquery": "^3.5.14",
+    "react-scripts": "5.0.1"
   }
 }

@@ -19,7 +19,8 @@ export interface monthYearAction {
 export enum expensesActionKind {
   ADD_EXPENSE = "ADD_EXPENSE",
   REMOVE_EXPENSE = "REMOVE_EXPENSE",
-  UPDATE_EXPENSE = "UPDATE_EXPENSE"
+  UPDATE_EXPENSE = "UPDATE_EXPENSE",
+  ADD_EXPENSE_TO_LIST = "ADD_EXPENSE_TO_LIST",
 }
 
 export interface expensesAction {
@@ -55,4 +56,17 @@ export var month_ed: { [month: number]: number } = {
   10: 31,
   11: 30,
   12: 31,
+};
+
+export const generateUUID = () => {
+  var d = new Date().getTime();
+  var uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+    /[xy]/g,
+    function (c) {
+      var r = (d + Math.random() * 16) % 16 | 0;
+      d = Math.floor(d / 16);
+      return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+    }
+  );
+  return uuid;
 };

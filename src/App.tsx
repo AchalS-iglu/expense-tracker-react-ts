@@ -14,7 +14,7 @@ import { monthYearActionKind } from "./lib/reusables";
 
 const App = () => {
   const { user } = UserAuth();
-  const { getExpenses, getBudget } = DB();
+  const { getExpenses, getBudget, addExpense } = DB();
   const { monthYear, dispatchMonthYear, expenses, dispatchExpenses } = State();
   const [totalSpent, setTotalSpent] = useState<number>(0);
 
@@ -26,10 +26,9 @@ const App = () => {
     setTotalSpent(total);
   };
 
-  useEffect(() => {
-    getTotalSpent();
-    console.log(expenses)
-  });
+  // useEffect(() => {
+  //   getTotalSpent();
+  // });
 
   useEffect(() => {
     if (user) {
@@ -109,7 +108,10 @@ const App = () => {
         <h3 className="mt-3">Add Expense</h3>
         <div className="row mt-3">
           <div className="col-sm">
-            <AddExpenseForm />
+            <AddExpenseForm
+              dispatchExpenses={dispatchExpenses}
+              addExpense={addExpense}
+            />
           </div>
         </div>
       </div>

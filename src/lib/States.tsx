@@ -44,16 +44,27 @@ const expensesReducer = (state: expense_t[], action: expensesAction) => {
     case expensesActionKind.ADD_EXPENSE:
       if (state.length === 0) {
         return [action.payload];
+      } else if (action.payload.id in state.map((expense) => expense.id)) {
+        return state;
+      } else {
+        console.log(state);
+        return [...state, action.payload];
       }
-      return state.map((expense) => {
-        if (expense.id === action.payload.id) {
-          return action.payload;
-        } else {
-          return expense;
-        }
-      });
+    // if (state.length === 0) {
+    //   return [action.payload];
+    // } else {
+    //   for (let expense of state) {
+    //     if (expense.id === action.payload.id) {
+    //       return state;
+    //     } else {
+    //       return [...state, action.payload];
+    //     }
+    //   }
+    // }
+    case expensesActionKind.ADD_EXPENSE_TO_LIST:
+      return [...state, action.payload];
     case expensesActionKind.REMOVE_EXPENSE:
-      console.log(action.payload)
+      console.log(action.payload);
       return state.filter((expense) => expense.id !== action.payload.id);
     case expensesActionKind.UPDATE_EXPENSE:
       return state.map((expense) => {
