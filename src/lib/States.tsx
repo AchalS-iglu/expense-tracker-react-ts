@@ -50,7 +50,8 @@ const expensesReducer = (state: expense_t[], action: expensesAction) => {
             return state;
          } else {
             console.log(state);
-            return [...state, action.payload];
+            let result = [...state, action.payload];
+            return result.sort((a, b) => a.date.toMillis() - b.date.toMillis());
          }
       // if (state.length === 0) {
       //   return [action.payload];
