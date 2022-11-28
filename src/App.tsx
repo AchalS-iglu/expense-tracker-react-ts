@@ -10,113 +10,167 @@ import NavBar from "./components/NavBar";
 import BudgetBar from "./components/BudgetBar";
 import { DB } from "./lib/Firebase/DBContext";
 import { State } from "./lib/States";
-import { monthYearActionKind } from "./lib/reusables";
+import { expense_t, monthYearActionKind } from "./lib/reusables";
 
 const App = () => {
-  const { user } = UserAuth();
-  const { getExpenses, getBudget, addExpense } = DB();
-  const { monthYear, dispatchMonthYear, expenses, dispatchExpenses } = State();
-  const [totalSpent, setTotalSpent] = useState<number>(0);
+   const { user, loading } = UserAuth();
+   const { getExpenses, getBudget, addExpense } = DB();
+   const { monthYear, dispatchMonthYear, expenses, dispatchExpenses } = State();
 
-  const getTotalSpent = () => {
-    let total = 0;
-    for (let expense of expenses) {
-      total += expense.cost;
-    }
-    setTotalSpent(total);
-  };
+   const getTotal = (expenses: expense_t[]) => {
+      let total = expenses.map((expense) => expense.cost);
+      return total.reduce((a, b) => Number(a) + Number(b), 0);
+   };
 
-  // useEffect(() => {
-  //   getTotalSpent();
-  // });
+   const [total, setTotal] = useState<number>(getTotal(expenses));
 
-  useEffect(() => {
-    if (user) {
-      const today = new Date();
+   useEffect(() => {
+      let isCancelled = false;
+      let total = getTotal(expenses);
+      if (!isCancelled) {
+         setTotal(total);
+      }
 
-      dispatchMonthYear({
-        type: monthYearActionKind.SET_MONTH,
-        payload: today.getMonth() + 1,
-      });
+      return () => {
+         isCancelled = true;
+      };
+   }, [expenses]);
 
-      dispatchMonthYear({
-        type: monthYearActionKind.SET_YEAR,
-        payload: today.getFullYear(),
-      });
+   // useEffect(() => {
+   //   getTotalSpent();
+   // });
 
-      getBudget("user", monthYear, dispatchMonthYear);
+   // useEffect(() => {
+   //   if (user) {
+   //     const today = new Date();
 
-      dispatchMonthYear({
-        type: monthYearActionKind.SET_BUDGET,
-        payload: monthYear.budget,
-      });
+   //     dispatchMonthYear({
+   //       type: monthYearActionKind.SET_MONTH,
+   //       payload: today.getMonth() + 1,
+   //     });
 
-      getExpenses(monthYear, dispatchExpenses);
-      getTotalSpent();
-    }
-  }, [user?.uid]);
+   //     dispatchMonthYear({
+   //       type: monthYearActionKind.SET_YEAR,
+   //       payload: today.getFullYear(),
+   //     });
 
-  useEffect(() => {
-    try {
-      getBudget("user", monthYear, dispatchMonthYear);
-      getExpenses(monthYear, dispatchExpenses);
-      getTotalSpent();
-    } catch (error) {
-      console.log(error);
-    }
-  }, [monthYear.month, monthYear.year]);
+   //     getBudget("user", monthYear, dispatchMonthYear);
 
-  if (!user)
-    return (
+   //     dispatchMonthYear({
+   //       type: monthYearActionKind.SET_BUDGET,
+   //       payload: monthYear.budget,
+   //     });
+
+   //     getExpenses(monthYear, dispatchExpenses);
+   //     getTotalSpent();
+   //   }
+   // }, [user?.uid]);
+
+   useEffect(() => {
+      let isCancelled = false;
+      if (!isCancelled) {
+         try {
+            if (
+               monthYear.month !== 0 &&
+               monthYear.year !== 0 &&
+               user?.uid &&
+               !isCancelled
+            ) {
+               getBudget("user", monthYear, dispatchMonthYear, {
+                  current: isCancelled,
+               });
+               getExpenses(monthYear, dispatchExpenses, {
+                  current: isCancelled,
+               });
+            } else if (user?.uid && !loading && !isCancelled) {
+               const today = new Date();
+
+               dispatchMonthYear({
+                  type: monthYearActionKind.SET_MONTH,
+                  payload: today.getMonth() + 1,
+               });
+
+               dispatchMonthYear({
+                  type: monthYearActionKind.SET_YEAR,
+                  payload: today.getFullYear(),
+               });
+
+               getBudget("user", monthYear, dispatchMonthYear, {
+                  current: isCancelled,
+               });
+
+               dispatchMonthYear({
+                  type: monthYearActionKind.SET_BUDGET,
+                  payload: monthYear.budget,
+               });
+
+               getExpenses(monthYear, dispatchExpenses, {
+                  current: isCancelled,
+               });
+            }
+         } catch (error) {
+            console.log(error);
+         }
+      }
+      return () => {
+         console.log("unmounting");
+         isCancelled = true;
+      };
+   }, [monthYear.year, monthYear.month]);
+
+   if (!user)
+      return (
+         <div>
+            <SignIn />
+         </div>
+      );
+
+   return (
       <div>
-        <SignIn />
-      </div>
-    );
-
-  return (
-    <div>
-      <div className="container">
-        <NavBar />
-        <div className="container">
-          <div className="row mt-3 gap-2">
-            <div className="col-sm rounded border border-primary border border-info">
-              <ul className="list-group list-group-flush">
-                <li className="list-group-item">
-                  Month Selected: {monthYear.month}-{monthYear.year}
-                </li>
-              </ul>
+         <div className="container">
+            <NavBar />
+            <div className="container">
+               <div className="row mt-3 gap-2">
+                  <div className="col-sm rounded border border-primary border border-info">
+                     <ul className="list-group list-group-flush">
+                        <li className="list-group-item">
+                           Month Selected: {monthYear.month}-{monthYear.year}
+                        </li>
+                     </ul>
+                  </div>
+                  <div className="col-sm rounded border border-primary border border-info">
+                     <ul className="list-group list-group-flush text-end">
+                        <li className="list-group-item">
+                           Logged in as: {user?.displayName}
+                        </li>
+                     </ul>
+                  </div>
+               </div>
             </div>
-            <div className="col-sm rounded border border-primary border border-info">
-              <ul className="list-group list-group-flush text-end">
-                <li className="list-group-item">
-                  Logged in as: {user?.displayName}
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        {/* <h1 className="mt-3">My Budget Planner</h1> */}
-        <div>
-          <BudgetBar monthYear={monthYear} total={totalSpent} />
-        </div>
-        <h3 className="mt-3">Expenses</h3>
-        <div className="row mt-3">
-          <div className="col-sm">
-            <ExpenseList />
-          </div>
-        </div>
-        <h3 className="mt-3">Add Expense</h3>
-        <div className="row mt-3">
-          <div className="col-sm">
-            <AddExpenseForm
-              dispatchExpenses={dispatchExpenses}
-              addExpense={addExpense}
-            />
-          </div>
-        </div>
+            {/* <h1 className="mt-3">My Budget Planner</h1> */}
+            <>
+               <div>
+                  <BudgetBar monthYear={monthYear} total={total} />
+               </div>
+               <h3 className="mt-3">Expenses</h3>
+               <div className="row mt-3">
+                  <div className="col-sm">
+                     <ExpenseList expenses={expenses} />
+                  </div>
+               </div>
+               <h3 className="mt-3">Add Expense</h3>
+               <div className="row mt-3">
+                  <div className="col-sm">
+                     <AddExpenseForm
+                        dispatchExpenses={dispatchExpenses}
+                        addExpense={addExpense}
+                     />
+                  </div>
+               </div>
+            </>
+         </div>
       </div>
-    </div>
-  );
+   );
 };
 
 export default App;
