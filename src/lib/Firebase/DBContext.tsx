@@ -273,21 +273,19 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
     getDoc(expensesCollectionRef)
       .then((result) => {
         const data = result.data();
-        console.log(data);
         if (data) {
           if (data?.months.length !== 0 && data?.months) {
             let tempMonthsList = [...data.months];
             operatingMonthList = [];
             let pushed = false;
             for (let tempMonthYear of tempMonthsList) {
-              console.log(tempMonthYear);
               if (
                 tempMonthYear.month === monthYear.month &&
                 tempMonthYear.year === monthYear.year
               ) {
                 operatingMonthList.push(monthYear);
                 pushed = true;
-                break;
+                continue;
               } else {
                 operatingMonthList.push(tempMonthYear);
               }
@@ -300,8 +298,6 @@ const DBContextProvider: React.FC<{ children: React.ReactNode }> = ({
             });
           }
         } else {
-          console.log("test1");
-
           setDoc(expensesCollectionRef, {
             months: [monthYear],
           });

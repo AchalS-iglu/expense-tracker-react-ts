@@ -49,7 +49,6 @@ const expensesReducer = (state: expense_t[], action: expensesAction) => {
       ) {
         return state;
       } else {
-        console.log(state);
         let result = [...state, action.payload];
         return result.sort((a, b) => a.date.toMillis() - b.date.toMillis());
       }
@@ -65,7 +64,6 @@ const expensesReducer = (state: expense_t[], action: expensesAction) => {
     //   }
     // }
     case expensesActionKind.REMOVE_EXPENSE:
-      console.log(action.payload);
       return state.filter((expense) => expense.id !== action.payload.id);
     case expensesActionKind.UPDATE_EXPENSE:
       return state.map((expense) => {

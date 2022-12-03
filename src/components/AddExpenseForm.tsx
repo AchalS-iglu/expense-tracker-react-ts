@@ -25,6 +25,12 @@ interface props {
   dispatchExpenses: React.Dispatch<expensesAction>;
   userID: string;
   currentMonthYear: monthYear_t;
+  getExpenses: (
+    userID: string,
+    monthYear: monthYear_t,
+    dispatchExpenses: React.Dispatch<expensesAction>,
+    cancelled: React.MutableRefObject<boolean>
+  ) => void;
 }
 export class AddExpenseForm extends Component<props, expenseForm_t> {
   constructor(props: props) {
@@ -74,6 +80,14 @@ export class AddExpenseForm extends Component<props, expenseForm_t> {
       cost: 0,
       date: "",
     });
+    this.props.getExpenses(
+      this.props.userID,
+      this.props.currentMonthYear,
+      this.props.dispatchExpenses,
+      {
+        current: false,
+      }
+    );
   }
 
   handleImport() {
@@ -121,6 +135,16 @@ export class AddExpenseForm extends Component<props, expenseForm_t> {
         );
       }
     }
+    console.log(budget);
+
+    this.props.getExpenses(
+      this.props.userID,
+      this.props.currentMonthYear,
+      this.props.dispatchExpenses,
+      {
+        current: false,
+      }
+    );
   }
 
   render() {

@@ -141,6 +141,7 @@ const App = () => {
                 dispatchExpenses={dispatchExpenses}
                 addExpense={addExpense}
                 currentMonthYear={monthYear}
+                getExpenses={getExpenses}
               />
             </div>
           </div>
