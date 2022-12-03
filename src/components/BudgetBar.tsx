@@ -8,6 +8,7 @@ import { State } from "../lib/States";
 interface props {
   monthYear: monthYear_t;
   total: number;
+  userID: string
 }
 
 const BudgetBar = (props: props) => {
@@ -28,7 +29,7 @@ const BudgetBar = (props: props) => {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     updateCurrentBudget(
-      "user",
+      props.userID,
       {
         ...props.monthYear,
         budget: placeholderBudget,

@@ -1,5 +1,6 @@
 import React from "react";
 import { TiDelete } from "react-icons/ti";
+import { UserAuth } from "../lib/Firebase/AuthContext";
 import { DB } from "../lib/Firebase/DBContext";
 import { expense_t } from "../lib/reusables";
 import { State } from "../lib/States";
@@ -9,13 +10,16 @@ interface props {
 }
 
 const ExpenseItem = (props: props) => {
+  const { user } = UserAuth();
   const { delExpense } = DB();
   const { dispatchExpenses } = State();
 
   const date = props.expense.date.toDate().toDateString();
 
   const handleDelete = () => {
-    delExpense(props.expense, dispatchExpenses);
+    if (user) {
+      delExpense(user?.uid, props.expense, dispatchExpenses);
+    }
   };
 
   return (

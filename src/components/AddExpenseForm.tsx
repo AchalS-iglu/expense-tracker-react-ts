@@ -1,41 +1,51 @@
 import { Timestamp } from "firebase/firestore";
 import React, { Component } from "react";
-import { expensesAction, expense_t, generateUUID } from "../lib/reusables";
+import {
+  expensesAction,
+  expense_t,
+  generateUUID,
+  monthYear_t,
+} from "../lib/reusables";
 
 interface expenseForm_t {
   name: string;
   cost: number;
   date: string;
+  importText: string;
+  loadingImports: boolean;
 }
-export class AddExpenseForm extends Component<
-  {
-    addExpense: (
-      expense: expense_t,
-      dispatchExpenses: React.Dispatch<expensesAction>
-    ) => void;
-    dispatchExpenses: React.Dispatch<expensesAction>;
-  },
-  expenseForm_t
-> {
-  constructor(props: {
-    addExpense: (
-      expense: expense_t,
-      dispatchExpenses: React.Dispatch<expensesAction>
-    ) => void;
-    dispatchExpenses: React.Dispatch<expensesAction>;
-  }) {
+
+interface props {
+  addExpense: (
+    userID: string,
+    expense: expense_t,
+    dispatchExpenses: React.Dispatch<expensesAction>,
+    selectedMonthYear: monthYear_t
+  ) => void;
+  dispatchExpenses: React.Dispatch<expensesAction>;
+  userID: string;
+  currentMonthYear: monthYear_t;
+}
+export class AddExpenseForm extends Component<props, expenseForm_t> {
+  constructor(props: props) {
     super(props);
     this.state = {
       name: "",
       cost: 0,
       date: "",
+      importText: "",
+      loadingImports: false,
     };
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleImport = this.handleImport.bind(this);
   }
 
-  handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+  handleInputChange(
+    event:
+      | React.ChangeEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLTextAreaElement>
+  ) {
     const target = event.target;
     const value = target.value;
     const name = target.id;
@@ -53,7 +63,12 @@ export class AddExpenseForm extends Component<
       cost: this.state.cost,
       date: Timestamp.fromDate(new Date(this.state.date)),
     };
-    this.props.addExpense(expense, this.props.dispatchExpenses);
+    this.props.addExpense(
+      this.props.userID,
+      expense,
+      this.props.dispatchExpenses,
+      this.props.currentMonthYear
+    );
     this.setState({
       name: "",
       cost: 0,
@@ -61,9 +76,51 @@ export class AddExpenseForm extends Component<
     });
   }
 
-  handleImport(event: React.MouseEvent<HTMLButtonElement>) {
-    event.preventDefault();
-    console.log("import form open");
+  handleImport() {
+    this.setState({
+      ...this.state,
+      loadingImports: true,
+    });
+
+    function isDate(dateStr: string) {
+      return !isNaN(new Date(dateStr).getDate());
+    }
+
+    const lines = this.state.importText.split("\n");
+    let budget = 0;
+    let date = "";
+
+    for (let line of lines) {
+      let lineData = line.trim().split(" ");
+
+      try {
+        let temp =
+          lineData[0].substring(0, lineData[0].length - 2) +
+          " " +
+          lineData[1].toLowerCase() +
+          ", 2022";
+        if (isDate(temp)) {
+          date = temp;
+        }
+      } catch {}
+
+      if (lineData[0][0] === "+") {
+        budget += Number(lineData[0].slice(1));
+      } else if (lineData[0][0] === "-") {
+        const expense: expense_t = {
+          id: generateUUID(),
+          name: lineData.slice(1).join(" "),
+          cost: Number(lineData[0].slice(1)),
+          date: Timestamp.fromDate(new Date(date)),
+        };
+        this.props.addExpense(
+          this.props.userID,
+          expense,
+          this.props.dispatchExpenses,
+          this.props.currentMonthYear
+        );
+      }
+    }
   }
 
   render() {
@@ -85,7 +142,8 @@ export class AddExpenseForm extends Component<
             <label htmlFor="cost">Cost</label>
             <input
               required={true}
-              type="text"
+              type="number"
+              pattern="[0-9]"
               className="form-control"
               id="cost"
               value={this.state.cost}
@@ -114,8 +172,10 @@ export class AddExpenseForm extends Component<
             <button
               className="btn btn-warning mt-3"
               id="importFormOpen"
+              type="button"
               data-bs-toggle="modal"
               data-bs-target="#importForm"
+              data-bs-keyboard="false"
             >
               Import from txt {"(iglu specific)"}
             </button>
@@ -123,7 +183,7 @@ export class AddExpenseForm extends Component<
         </div>
         <div
           className="modal fade"
-          id="exampleModal"
+          id="importForm"
           tabIndex={-1}
           aria-labelledby="exampleModalLabel"
           aria-hidden="true"
@@ -132,7 +192,7 @@ export class AddExpenseForm extends Component<
             <div className="modal-content">
               <div className="modal-header">
                 <h1 className="modal-title fs-5" id="exampleModalLabel">
-                  Modal title
+                  Import from text
                 </h1>
                 <button
                   type="button"
@@ -141,7 +201,29 @@ export class AddExpenseForm extends Component<
                   aria-label="Close"
                 ></button>
               </div>
-              <div className="modal-body">...</div>
+              <div className="modal-body">
+                {this.state.loadingImports ? (
+                  <div className="d-flex justify-content-center">
+                    <div
+                      className="spinner-border text-primary"
+                      role="status"
+                    ></div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="mb-3">
+                      Kindly input the text to be parsed
+                    </div>
+                    <textarea
+                      // type="text"
+                      className="form-control"
+                      id="importText"
+                      value={this.state.importText}
+                      onChange={this.handleInputChange}
+                    ></textarea>
+                  </div>
+                )}
+              </div>
               <div className="modal-footer">
                 <button
                   type="button"
@@ -150,8 +232,13 @@ export class AddExpenseForm extends Component<
                 >
                   Close
                 </button>
-                <button type="button" className="btn btn-primary">
-                  Save changes
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={this.handleImport}
+                  data-bs-dismiss="modal"
+                >
+                  Import
                 </button>
               </div>
             </div>

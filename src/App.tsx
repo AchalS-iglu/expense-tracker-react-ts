@@ -13,164 +13,141 @@ import { State } from "./lib/States";
 import { expense_t, monthYearActionKind } from "./lib/reusables";
 
 const App = () => {
-   const { user, loading } = UserAuth();
-   const { getExpenses, getBudget, addExpense } = DB();
-   const { monthYear, dispatchMonthYear, expenses, dispatchExpenses } = State();
+  const { user, loading } = UserAuth();
+  const { getExpenses, getBudget, addExpense } = DB();
+  const { monthYear, dispatchMonthYear, expenses, dispatchExpenses } = State();
 
-   const getTotal = (expenses: expense_t[]) => {
-      let total = expenses.map((expense) => expense.cost);
-      return total.reduce((a, b) => Number(a) + Number(b), 0);
-   };
+  const getTotal = (expenses: expense_t[]) => {
+    let total = expenses.map((expense) => expense.cost);
+    return total.reduce((a, b) => Number(a) + Number(b), 0);
+  };
 
-   const [total, setTotal] = useState<number>(getTotal(expenses));
+  const [total, setTotal] = useState<number>(getTotal(expenses));
 
-   useEffect(() => {
-      let isCancelled = false;
+  useEffect(() => {
+    let isCancelled = false;
+    if (user) {
       let total = getTotal(expenses);
       if (!isCancelled) {
-         setTotal(total);
+        setTotal(total);
       }
 
-      return () => {
-         isCancelled = true;
-      };
-   }, [expenses]);
+      getBudget(user.uid, monthYear, dispatchMonthYear, {
+        current: isCancelled,
+      });
+    }
 
-   // useEffect(() => {
-   //   getTotalSpent();
-   // });
+    return () => {
+      isCancelled = true;
+    };
+  }, [expenses]);
 
-   // useEffect(() => {
-   //   if (user) {
-   //     const today = new Date();
+  useEffect(() => {
+    let isCancelled = false;
+    if (!isCancelled) {
+      try {
+        if (
+          monthYear.month !== 0 &&
+          monthYear.year !== 0 &&
+          user?.uid &&
+          !isCancelled
+        ) {
+          getBudget(user.uid, monthYear, dispatchMonthYear, {
+            current: isCancelled,
+          });
+          getExpenses(user.uid, monthYear, dispatchExpenses, {
+            current: isCancelled,
+          });
+        } else if (user?.uid && !loading && !isCancelled) {
+          const today = new Date();
 
-   //     dispatchMonthYear({
-   //       type: monthYearActionKind.SET_MONTH,
-   //       payload: today.getMonth() + 1,
-   //     });
+          dispatchMonthYear({
+            type: monthYearActionKind.SET_MONTH,
+            payload: today.getMonth() + 1,
+          });
 
-   //     dispatchMonthYear({
-   //       type: monthYearActionKind.SET_YEAR,
-   //       payload: today.getFullYear(),
-   //     });
+          dispatchMonthYear({
+            type: monthYearActionKind.SET_YEAR,
+            payload: today.getFullYear(),
+          });
 
-   //     getBudget("user", monthYear, dispatchMonthYear);
+          getBudget(user.uid, monthYear, dispatchMonthYear, {
+            current: isCancelled,
+          });
 
-   //     dispatchMonthYear({
-   //       type: monthYearActionKind.SET_BUDGET,
-   //       payload: monthYear.budget,
-   //     });
+          dispatchMonthYear({
+            type: monthYearActionKind.SET_BUDGET,
+            payload: monthYear.budget,
+          });
 
-   //     getExpenses(monthYear, dispatchExpenses);
-   //     getTotalSpent();
-   //   }
-   // }, [user?.uid]);
-
-   useEffect(() => {
-      let isCancelled = false;
-      if (!isCancelled) {
-         try {
-            if (
-               monthYear.month !== 0 &&
-               monthYear.year !== 0 &&
-               user?.uid &&
-               !isCancelled
-            ) {
-               getBudget("user", monthYear, dispatchMonthYear, {
-                  current: isCancelled,
-               });
-               getExpenses(monthYear, dispatchExpenses, {
-                  current: isCancelled,
-               });
-            } else if (user?.uid && !loading && !isCancelled) {
-               const today = new Date();
-
-               dispatchMonthYear({
-                  type: monthYearActionKind.SET_MONTH,
-                  payload: today.getMonth() + 1,
-               });
-
-               dispatchMonthYear({
-                  type: monthYearActionKind.SET_YEAR,
-                  payload: today.getFullYear(),
-               });
-
-               getBudget("user", monthYear, dispatchMonthYear, {
-                  current: isCancelled,
-               });
-
-               dispatchMonthYear({
-                  type: monthYearActionKind.SET_BUDGET,
-                  payload: monthYear.budget,
-               });
-
-               getExpenses(monthYear, dispatchExpenses, {
-                  current: isCancelled,
-               });
-            }
-         } catch (error) {
-            console.log(error);
-         }
+          getExpenses(user.uid, monthYear, dispatchExpenses, {
+            current: isCancelled,
+          });
+        }
+      } catch (error) {
+        console.log(error);
       }
-      return () => {
-         console.log("unmounting");
-         isCancelled = true;
-      };
-   }, [monthYear.year, monthYear.month]);
+    }
+    return () => {
+      isCancelled = true;
+    };
+  }, [monthYear.year, monthYear.month]);
 
-   if (!user)
-      return (
-         <div>
-            <SignIn />
-         </div>
-      );
-
-   return (
+  if (!user)
+    return (
       <div>
-         <div className="container">
-            <NavBar />
-            <div className="container">
-               <div className="row mt-3 gap-2">
-                  <div className="col-sm rounded border border-primary border border-info">
-                     <ul className="list-group list-group-flush">
-                        <li className="list-group-item">
-                           Month Selected: {monthYear.month}-{monthYear.year}
-                        </li>
-                     </ul>
-                  </div>
-                  <div className="col-sm rounded border border-primary border border-info">
-                     <ul className="list-group list-group-flush text-end">
-                        <li className="list-group-item">
-                           Logged in as: {user?.displayName}
-                        </li>
-                     </ul>
-                  </div>
-               </div>
-            </div>
-            {/* <h1 className="mt-3">My Budget Planner</h1> */}
-            <>
-               <div>
-                  <BudgetBar monthYear={monthYear} total={total} />
-               </div>
-               <h3 className="mt-3">Expenses</h3>
-               <div className="row mt-3">
-                  <div className="col-sm">
-                     <ExpenseList expenses={expenses} />
-                  </div>
-               </div>
-               <h3 className="mt-3">Add Expense</h3>
-               <div className="row mt-3">
-                  <div className="col-sm">
-                     <AddExpenseForm
-                        dispatchExpenses={dispatchExpenses}
-                        addExpense={addExpense}
-                     />
-                  </div>
-               </div>
-            </>
-         </div>
+        <SignIn />
       </div>
-   );
+    );
+
+  return (
+    <div>
+      <div className="container">
+        <NavBar />
+        <div className="container">
+          <div className="row mt-3 gap-2">
+            <div className="col-sm rounded border border-primary border border-info">
+              <ul className="list-group list-group-flush">
+                <li className="list-group-item">
+                  Month Selected: {monthYear.month}-{monthYear.year}
+                </li>
+              </ul>
+            </div>
+            <div className="col-sm rounded border border-primary border border-info">
+              <ul className="list-group list-group-flush text-end">
+                <li className="list-group-item">
+                  Logged in as: {user?.displayName}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        {/* <h1 className="mt-3">My Budget Planner</h1> */}
+        <>
+          <div>
+            <BudgetBar userID={user.uid} monthYear={monthYear} total={total} />
+          </div>
+          <h3 className="mt-3">Expenses</h3>
+          <div className="row mt-3">
+            <div className="col-sm">
+              <ExpenseList expenses={expenses} />
+            </div>
+          </div>
+          <h3 className="mt-3">Add Expense</h3>
+          <div className="row mt-3">
+            <div className="col-sm">
+              <AddExpenseForm
+                userID={user.uid}
+                dispatchExpenses={dispatchExpenses}
+                addExpense={addExpense}
+                currentMonthYear={monthYear}
+              />
+            </div>
+          </div>
+        </>
+      </div>
+    </div>
+  );
 };
 
 export default App;
