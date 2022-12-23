@@ -35,6 +35,10 @@ const App = () => {
       getBudget(user.uid, monthYear, dispatchMonthYear, {
         current: isCancelled,
       });
+
+      getExpenses(user.uid, monthYear, dispatchExpenses, {
+        current: isCancelled,
+      });
     }
 
     return () => {
