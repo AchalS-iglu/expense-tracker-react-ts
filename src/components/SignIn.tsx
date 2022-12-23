@@ -88,7 +88,7 @@ const SignIn = () => {
                             src="https://img.icons8.com/color/16/000000/google-logo.png"
                             alt="Login with Google"
                           />{" "}
-                          Signin Using Google
+                          Sign In Using Google
                         </span>
                       </div>
                       {/* <div className="mb-3" onClick={githubSignIn}>
