@@ -24,27 +24,27 @@ const App = () => {
 
   const [total, setTotal] = useState<number>(getTotal(expenses));
 
-  useEffect(() => { 
-    let isCancelled = false;
-    if (user) {
-      let total = getTotal(expenses);
-      if (!isCancelled) {
-        setTotal(total);
-      }
+  // useEffect(() => { 
+  //   let isCancelled = false;
+  //   if (user) {
+  //     let total = getTotal(expenses);
+  //     if (!isCancelled) {
+  //       setTotal(total);
+  //     }
 
-      getBudget(user.uid, monthYear, dispatchMonthYear, {
-        current: isCancelled,
-      });
+  //     getBudget(user.uid, monthYear, dispatchMonthYear, {
+  //       current: isCancelled,
+  //     });
 
-      getExpenses(user.uid, monthYear, dispatchExpenses, {
-        current: isCancelled,
-      });
-    }
+  //     getExpenses(user.uid, monthYear, dispatchExpenses, {
+  //       current: isCancelled,
+  //     });
+  //   }
 
-    return () => {
-      isCancelled = true;
-    };
-  });
+  //   return () => {
+  //     isCancelled = true;
+  //   };
+  // });
 
   useEffect(() => {
     let isCancelled = false;
